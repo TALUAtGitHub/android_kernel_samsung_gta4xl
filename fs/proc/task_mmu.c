@@ -103,14 +103,7 @@ unsigned long task_statm(struct mm_struct *mm,
 	*resident = *shared + get_mm_counter(mm, MM_ANONPAGES);
 	return mm->total_vm;
 }
-void task_statlmkd(struct mm_struct *mm, unsigned long *size,
-			 unsigned long *resident, unsigned long *swapresident)
-{
-	*size = mm->total_vm;
-	*resident = get_mm_counter(mm, MM_FILEPAGES) +
-			get_mm_counter(mm, MM_SHMEMPAGES) +
-			get_mm_counter(mm, MM_ANONPAGES);
-}
+
 #ifdef CONFIG_NUMA
 /*
  * Save get_task_policy() for show_numa_map().
