@@ -1123,14 +1123,23 @@ loop_set_status(struct loop_device *lo, const struct loop_info64 *info)
 	struct loop_func_table *xfer;
 	kuid_t uid = current_uid();
 
+	err = mutex_lock_killable_nested(&loop_ctl_mutex, 1);
+	if (err)
+		return err;
 	if (lo->lo_encrypt_key_size &&
 	    !uid_eq(lo->lo_key_owner, uid) &&
-	    !capable(CAP_SYS_ADMIN))
-		return -EPERM;
-	if (lo->lo_state != Lo_bound)
-		return -ENXIO;
-	if ((unsigned int) info->lo_encrypt_key_size > LO_KEY_SIZE)
-		return -EINVAL;
+	    !capable(CAP_SYS_ADMIN)) {
+		err = -EPERM;
+		goto out_unlock;
+	}
+	if (lo->lo_state != Lo_bound) {
+		err = -ENXIO;
+		goto out_unlock;
+	}
+	if ((unsigned int) info->lo_encrypt_key_size > LO_KEY_SIZE) {
+		err = -EINVAL;
+		goto out_unlock;
+	}
 
 	if (lo->lo_offset != info->lo_offset ||
 	    lo->lo_sizelimit != info->lo_sizelimit) {
@@ -1143,26 +1152,26 @@ loop_set_status(struct loop_device *lo, const struct loop_info64 *info)
 
 	err = loop_release_xfer(lo);
 	if (err)
-		goto exit;
+		goto out_unfreeze;
 
 	if (info->lo_encrypt_type) {
 		unsigned int type = info->lo_encrypt_type;
 
 		if (type >= MAX_LO_CRYPT) {
 			err = -EINVAL;
-			goto exit;
+			goto out_unfreeze;
 		}
 		xfer = xfer_funcs[type];
 		if (xfer == NULL) {
 			err = -EINVAL;
-			goto exit;
+			goto out_unfreeze;
 		}
 	} else
 		xfer = NULL;
 
 	err = loop_init_xfer(lo, xfer, info);
 	if (err)
-		goto exit;
+		goto out_unfreeze;
 
 	if (lo->lo_offset != info->lo_offset ||
 	    lo->lo_sizelimit != info->lo_sizelimit) {
@@ -1172,11 +1181,11 @@ loop_set_status(struct loop_device *lo, const struct loop_info64 *info)
 			pr_warn("%s: loop%d (%s) has still dirty pages (nrpages=%lu)\n",
 				__func__, lo->lo_number, lo->lo_file_name,
 				lo->lo_device->bd_inode->i_mapping->nrpages);
-			goto exit;
+			goto out_unfreeze;
 		}
 		if (figure_loop_size(lo, info->lo_offset, info->lo_sizelimit)) {
 			err = -EFBIG;
-			goto exit;
+			goto out_unfreeze;
 		}
 	}
 
@@ -1208,7 +1217,7 @@ loop_set_status(struct loop_device *lo, const struct loop_info64 *info)
 	/* update dio if lo_offset or transfer is changed */
 	__loop_update_dio(lo, lo->use_dio);
 
- exit:
+out_unfreeze:
 	blk_mq_unfreeze_queue(lo->lo_queue);
 
 	if (!err && (info->lo_flags & LO_FLAGS_PARTSCAN) &&
@@ -1217,6 +1226,8 @@ loop_set_status(struct loop_device *lo, const struct loop_info64 *info)
 		lo->lo_disk->flags &= ~GENHD_FL_NO_PART_SCAN;
 		loop_reread_partitions(lo, lo->lo_device);
 	}
+out_unlock:
+	mutex_unlock(&loop_ctl_mutex);
 
 	return err;
 }
@@ -1485,12 +1496,8 @@ static int lo_ioctl(struct block_device *bdev, fmode_t mode,
 	case LOOP_SET_STATUS:
 		err = -EPERM;
 		if ((mode & FMODE_WRITE) || capable(CAP_SYS_ADMIN)) {
-			err = mutex_lock_killable_nested(&loop_ctl_mutex, 1);
-			if (err)
-				return err;
 			err = loop_set_status_old(lo,
 					(struct loop_info __user *)arg);
-			mutex_unlock(&loop_ctl_mutex);
 		}
 		break;
 	case LOOP_GET_STATUS:
@@ -1498,12 +1505,8 @@ static int lo_ioctl(struct block_device *bdev, fmode_t mode,
 	case LOOP_SET_STATUS64:
 		err = -EPERM;
 		if ((mode & FMODE_WRITE) || capable(CAP_SYS_ADMIN)) {
-			err = mutex_lock_killable_nested(&loop_ctl_mutex, 1);
-			if (err)
-				return err;
 			err = loop_set_status64(lo,
 					(struct loop_info64 __user *) arg);
-			mutex_unlock(&loop_ctl_mutex);
 		}
 		break;
 	case LOOP_GET_STATUS64:
@@ -1648,12 +1651,8 @@ static int lo_compat_ioctl(struct block_device *bdev, fmode_t mode,
 
 	switch(cmd) {
 	case LOOP_SET_STATUS:
-		err = mutex_lock_killable(&loop_ctl_mutex);
-		if (!err) {
-			err = loop_set_status_compat(lo,
-						     (const struct compat_loop_info __user *)arg);
-			mutex_unlock(&loop_ctl_mutex);
-		}
+		err = loop_set_status_compat(lo,
+			     (const struct compat_loop_info __user *)arg);
 		break;
 	case LOOP_GET_STATUS:
 		err = loop_get_status_compat(lo,
