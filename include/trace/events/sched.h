@@ -731,6 +731,8 @@ TRACE_EVENT(sched_fluid_stat,
 		  __entry->util_avg,
 		  __entry->selectby)
 );
+
+#ifdef CONFIG_RT_GROUP_SCHED
 /*
  * Tracepoint for accounting sched averages for tasks.
  */
@@ -772,7 +774,7 @@ TRACE_EVENT(sched_rt_load_avg_task,
 		  (u32)__entry->util_sum,
 		  (u32)__entry->period_contrib)
 );
-
+#endif
 
 /*
  * Tracepoint for cfs_rq load tracking:
