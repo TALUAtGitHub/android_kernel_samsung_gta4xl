@@ -423,6 +423,81 @@ static ssize_t store_cpufreq_max_limit(struct kobject *kobj, struct kobj_attribu
 	return count;
 }
 
+static ssize_t store_set_cpucl0_lit_volt(struct kobject *kobj, struct kobj_attribute *attr,
+					 const char *buf, size_t count)
+{
+	int id = 2; /* dvfs_cpucl0 */
+	unsigned int rate, volt;
+
+	if (sscanf(buf, "%u %u", &rate, &volt) == 2) {
+		if ((volt < 500000) || (volt > 1300000))
+			goto err;
+
+		/* Assuming voltages divisible by 6250 can only be used */
+		if ((volt % 6250) != 0)
+			volt -= volt % 6250;
+
+		fvmap_update(id, rate, volt);
+		pr_info("%s: updated DVFS: dvfs_cpucl0 - rate: %u kHz - voltage: %u uV\n", __func__, rate, volt);
+		return count;
+	}
+
+err:
+	return -EINVAL;
+}
+
+static ssize_t store_set_cpucl1_big_volt(struct kobject *kobj, struct kobj_attribute *attr,
+					 const char *buf, size_t count)
+{
+	int id = 3; /* dvfs_cpucl1 */
+	unsigned int rate, volt;
+
+	if (sscanf(buf, "%u %u", &rate, &volt) == 2) {
+		if ((volt < 500000) || (volt > 1300000))
+			goto err;
+
+		/* Assuming voltages divisible by 6250 can only be used */
+		if ((volt % 6250) != 0)
+			volt -= volt % 6250;
+
+		fvmap_update(id, rate, volt);
+		pr_info("%s: updated DVFS: dvfs_cpucl1 - rate: %u kHz - voltage: %u uV\n", __func__, rate, volt);
+		return count;
+	}
+
+err:
+	return -EINVAL;
+}
+
+static ssize_t store_update_dvfs_table(struct kobject *kobj, struct kobj_attribute *attr,
+				       const char *buf, size_t count)
+{
+	unsigned int id, rate, volt;
+
+	if (sscanf(buf, "%u %u %u", &id, &rate, &volt) == 3) {
+		/* Assuming voltages divisible by 6250 can only be used */
+		if ((volt % 6250) != 0)
+			volt -= volt % 6250;
+
+		fvmap_update(id, rate, volt);
+		pr_info("%s: updated DVFS id: %u - rate: %u kHz - voltage: %u uV\n", __func__, id, rate, volt);
+		return count;
+	}
+
+	return -EINVAL;
+}
+
+static ssize_t store_print_dvfs_table(struct kobject *kobj, struct kobj_attribute *attr,
+				      const char *buf, size_t count)
+{
+	if (sysfs_streq(buf, "true") || sysfs_streq(buf, "1")) {
+		fvmap_print();
+		return count;
+	}
+
+	return -EINVAL;
+}
+
 static struct kobj_attribute cpufreq_table =
 __ATTR(cpufreq_table, 0444 , show_cpufreq_table, NULL);
 static struct kobj_attribute cpufreq_min_limit =
@@ -434,6 +509,18 @@ __ATTR(cpufreq_min_limit_wo_boost, 0644,
 static struct kobj_attribute cpufreq_max_limit =
 __ATTR(cpufreq_max_limit, 0644,
 		show_cpufreq_max_limit, store_cpufreq_max_limit);
+static struct kobj_attribute set_cpucl0_lit_volt =
+__ATTR(set_cpucl0_lit_volt, 0600,
+		NULL, store_set_cpucl0_lit_volt);
+static struct kobj_attribute set_cpucl1_big_volt =
+__ATTR(set_cpucl1_big_volt, 0600,
+		NULL, store_set_cpucl1_big_volt);
+static struct kobj_attribute print_dvfs_table =
+__ATTR(print_dvfs_table, 0600,
+		NULL, store_print_dvfs_table);
+static struct kobj_attribute update_dvfs_table =
+__ATTR(update_dvfs_table, 0600,
+		NULL, store_update_dvfs_table);
 
 static __init void init_sysfs(void)
 {
@@ -449,6 +536,17 @@ static __init void init_sysfs(void)
 	if (sysfs_create_file(power_kobj, &cpufreq_max_limit.attr))
 		pr_err("failed to create cpufreq_max_limit node\n");
 
+	if (sysfs_create_file(power_kobj, &set_cpucl0_lit_volt.attr))
+		pr_err("failed to create set_cpucl0_lit_volt node\n");
+
+	if (sysfs_create_file(power_kobj, &set_cpucl1_big_volt.attr))
+		pr_err("failed to create set_cpucl1_big_volt node\n");
+
+	if (sysfs_create_file(power_kobj, &print_dvfs_table.attr))
+		pr_err("failed to create print_dvfs_table node\n");
+
+	if (sysfs_create_file(power_kobj, &update_dvfs_table.attr))
+		pr_err("failed to create update_dvfs_table node\n");
 }
 
 static int parse_ufc_ctrl_info(struct exynos_cpufreq_domain *domain,
