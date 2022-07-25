@@ -315,7 +315,6 @@ int pll_get_locktime(struct cmucal_pll *pll)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(pll_get_locktime);
 
 int pll_find_table(struct cmucal_pll *pll,
 		   struct cmucal_pll_table *table,
@@ -411,4 +410,3 @@ int pll_find_table(struct cmucal_pll *pll,
 
 	return -EVCLKINVAL;
 }
-EXPORT_SYMBOL_GPL(pll_find_table);
