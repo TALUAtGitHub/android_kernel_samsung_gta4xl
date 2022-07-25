@@ -73,7 +73,6 @@ unsigned int cmucal_get_list_size(unsigned int type)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(cmucal_get_list_size);
 
 void *cmucal_get_node(unsigned int id)
 {
@@ -121,7 +120,6 @@ void *cmucal_get_node(unsigned int id)
 
 	return node;
 }
-EXPORT_SYMBOL_GPL(cmucal_get_node);
 
 void * __init cmucal_get_sfr_node(unsigned int id)
 {
@@ -145,7 +143,6 @@ void * __init cmucal_get_sfr_node(unsigned int id)
 
 	return node;
 }
-EXPORT_SYMBOL_GPL(cmucal_get_sfr_node);
 
 unsigned int cmucal_get_id(char *name)
 {
@@ -207,7 +204,6 @@ unsigned int cmucal_get_id(char *name)
 
 	return id;
 }
-EXPORT_SYMBOL_GPL(cmucal_get_id);
 
 unsigned int cmucal_get_id_by_addr(unsigned int addr)
 {
@@ -256,4 +252,3 @@ unsigned int cmucal_get_id_by_addr(unsigned int addr)
 
 	return id;
 }
-EXPORT_SYMBOL_GPL(cmucal_get_id_by_addr);

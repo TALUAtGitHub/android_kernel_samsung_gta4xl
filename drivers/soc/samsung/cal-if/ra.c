@@ -844,7 +844,6 @@ int ra_set_list_enable(unsigned int *list, unsigned int num_list)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(ra_set_list_enable);
 
 int ra_set_list_disable(unsigned int *list, unsigned int num_list)
 {
@@ -861,7 +860,6 @@ int ra_set_list_disable(unsigned int *list, unsigned int num_list)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(ra_set_list_disable);
 
 void ra_set_pll_ops(unsigned int *list,
 		struct vclk_lut *lut,
@@ -892,7 +890,6 @@ void ra_set_pll_ops(unsigned int *list,
 			ra_set_value(list[i], to);
 	}
 }
-EXPORT_SYMBOL_GPL(ra_set_pll_ops);
 
 void ra_set_clk_by_type(unsigned int *list,
 		     struct vclk_lut *lut,
@@ -919,7 +916,6 @@ void ra_set_clk_by_type(unsigned int *list,
 		ra_set_value(list[i], to);
 	}
 }
-EXPORT_SYMBOL_GPL(ra_set_clk_by_type);
 
 void ra_set_clk_by_seq(unsigned int *list,
 		    struct vclk_lut *lut,
@@ -940,7 +936,6 @@ void ra_set_clk_by_seq(unsigned int *list,
 		}
 	}
 }
-EXPORT_SYMBOL_GPL(ra_set_clk_by_seq);
 
 int ra_compare_clk_list(unsigned int *params,
 			unsigned int *list,
@@ -981,7 +976,6 @@ mismatch:
 		 clk->name, params[i], ra_get_value(list[i]));
 	return -EVCLKNOENT;
 }
-EXPORT_SYMBOL_GPL(ra_compare_clk_list);
 
 unsigned int ra_set_rate_switch(struct vclk_switch *info, unsigned int rate_max)
 {
@@ -1007,7 +1001,6 @@ unsigned int ra_set_rate_switch(struct vclk_switch *info, unsigned int rate_max)
 
 	return switch_rate;
 }
-EXPORT_SYMBOL_GPL(ra_set_rate_switch);
 
 void ra_select_switch_pll(struct vclk_switch *info, unsigned int value)
 {
@@ -1027,7 +1020,6 @@ void ra_select_switch_pll(struct vclk_switch *info, unsigned int value)
 			ra_set_value(info->src_gate, value);
 	}
 }
-EXPORT_SYMBOL_GPL(ra_select_switch_pll);
 
 struct cmucal_clk *ra_get_parent(unsigned int id)
 {
@@ -1062,7 +1054,6 @@ struct cmucal_clk *ra_get_parent(unsigned int id)
 
 	return parent;
 }
-EXPORT_SYMBOL_GPL(ra_get_parent);
 
 int ra_set_rate(unsigned int id, unsigned int rate)
 {
@@ -1091,7 +1082,6 @@ int ra_set_rate(unsigned int id, unsigned int rate)
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(ra_set_rate);
 
 unsigned int ra_recalc_rate(unsigned int id)
 {
@@ -1142,7 +1132,6 @@ unsigned int ra_recalc_rate(unsigned int id)
 
 	return rate;
 }
-EXPORT_SYMBOL_GPL(ra_recalc_rate);
 
 int __init ra_init(void)
 {
@@ -1355,4 +1344,3 @@ int __init ra_init(void)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(ra_init);
