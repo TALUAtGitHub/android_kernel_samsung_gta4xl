@@ -339,7 +339,6 @@ unsigned int vclk_debug_clk_get_rate(unsigned int id)
 
 	return rate;
 }
-EXPORT_SYMBOL_GPL(vclk_debug_clk_get_rate);
 
 unsigned int vclk_debug_clk_get_value(unsigned int id)
 {
@@ -349,7 +348,6 @@ unsigned int vclk_debug_clk_get_value(unsigned int id)
 
 	return val;
 }
-EXPORT_SYMBOL_GPL(vclk_debug_clk_get_value);
 
 int vclk_debug_clk_set_value(unsigned int id, unsigned int params)
 {
@@ -359,7 +357,6 @@ int vclk_debug_clk_set_value(unsigned int id, unsigned int params)
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(vclk_debug_clk_set_value);
 
 /**
  * vclk_debug_init - lazily create the debugfs clk tree visualization
