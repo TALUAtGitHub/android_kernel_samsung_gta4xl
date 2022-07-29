@@ -13,9 +13,6 @@
 #ifndef __SEC_TS_H__
 #define __SEC_TS_H__
 
-#ifdef CONFIG_INPUT_BOOSTER
-#include <linux/input/input_booster.h>
-#endif
 #include <linux/completion.h>
 #include <linux/wakelock.h>
 #include <linux/input/sec_cmd.h>
