@@ -143,15 +143,7 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 				total_swapcache_pages();
 
 	static DEFINE_RATELIMIT_STATE(lmk_rs, DEFAULT_RATELIMIT_INTERVAL, 1);
-#if defined(CONFIG_SWAP)
-	unsigned long swap_orig_nrpages;
-	unsigned long swap_comp_nrpages;
-	int swap_rss;
-	int selected_swap_rss;
 
-	swap_orig_nrpages = get_swap_orig_data_nrpages();
-	swap_comp_nrpages = get_swap_comp_pool_nrpages();
-#endif
 	if (lowmem_adj_size < array_size)
 		array_size = lowmem_adj_size;
 	if (lowmem_minfree_size < array_size)
@@ -209,14 +201,6 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 			continue;
 		}
 		tasksize = get_mm_rss(p->mm);
-#if defined(CONFIG_SWAP)
-		swap_rss = get_mm_counter(p->mm, MM_SWAPENTS) *
-				swap_comp_nrpages / swap_orig_nrpages;
-		lowmem_print(3, "%s tasksize rss: %d swap_rss: %d swap: %lu/%lu\n",
-			     __func__, tasksize, swap_rss, swap_comp_nrpages,
-			     swap_orig_nrpages);
-		tasksize += swap_rss;
-#endif
 		task_unlock(p);
 		if (tasksize <= 0)
 			continue;
@@ -229,40 +213,24 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 		}
 		selected = p;
 		selected_tasksize = tasksize;
-#if defined(CONFIG_SWAP)
-		selected_swap_rss = swap_rss;
-#endif
 		selected_oom_score_adj = oom_score_adj;
 		lowmem_print(2, "select '%s' (%d), adj %hd, size %d, to kill\n",
 			     p->comm, p->pid, oom_score_adj, tasksize);
 	}
 	if (selected) {
-#if defined(CONFIG_SWAP)
-		int orig_tasksize = selected_tasksize - selected_swap_rss;
-#endif
 		task_lock(selected);
 		send_sig(SIGKILL, selected, 0);
 		if (selected->mm)
 			task_set_lmk_waiting(selected);
 		task_unlock(selected);
 		lowmem_print(1, "Killing '%s' (%d), adj %hd,\n"
-#if defined(CONFIG_SWAP)
-				 "   to free %ldkB (%ldKB %ldKB) on behalf of '%s' (%d) because\n"
-#else
 				 "   to free %ldkB on behalf of '%s' (%d) because\n"
-#endif
 				 "   cache %ldkB is below limit %ldkB for oom_score_adj %hd\n"
 				 "   Free memory is %ldkB above reserved\n"
 				 "   GFP mask is %#x(%pGg)\n",
 			     selected->comm, selected->pid,
 			     selected_oom_score_adj,
-#if defined(CONFIG_SWAP)
 			     selected_tasksize * (long)(PAGE_SIZE / 1024),
-			     orig_tasksize * (long)(PAGE_SIZE / 1024),
-			     selected_swap_rss * (long)(PAGE_SIZE / 1024),
-#else
-			     selected_tasksize * (long)(PAGE_SIZE / 1024),
-#endif
 			     current->comm, current->pid,
 			     other_file * (long)(PAGE_SIZE / 1024),
 			     minfree * (long)(PAGE_SIZE / 1024),

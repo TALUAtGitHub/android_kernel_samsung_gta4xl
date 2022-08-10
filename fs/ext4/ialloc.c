@@ -350,7 +350,6 @@ out:
 		if (!fatal)
 			fatal = err;
 	} else {
-		print_bh(sb, bitmap_bh, 0, EXT4_BLOCK_SIZE(sb));
 		ext4_error(sb, "bit already cleared for inode %lu", ino);
 		if (gdp && !EXT4_MB_GRP_IBITMAP_CORRUPT(grp)) {
 			int count;
@@ -1230,11 +1229,6 @@ fail_drop:
 	clear_nlink(inode);
 	unlock_new_inode(inode);
 out:
-	if (err == -ENOSPC) {
-		printk_ratelimited(KERN_INFO "Return ENOSPC: ifree=%d, inodes=%u\n",
-			(int) percpu_counter_read_positive(&sbi->s_freeinodes_counter),
-			le32_to_cpu(sbi->s_es->s_inodes_count));
-	}
 	dquot_drop(inode);
 	inode->i_flags |= S_NOQUOTA;
 	iput(inode);

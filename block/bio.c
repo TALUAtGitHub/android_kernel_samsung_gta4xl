@@ -613,7 +613,6 @@ void __bio_clone_fast(struct bio *bio, struct bio *bio_src)
 #endif
 
 	bio_clone_blkcg_association(bio, bio_src);
-	bio->bi_sec_flags = bio_src->bi_sec_flags;
 }
 EXPORT_SYMBOL(__bio_clone_fast);
 
@@ -702,7 +701,6 @@ struct bio *bio_clone_bioset(struct bio *bio_src, gfp_t gfp_mask,
 #endif
 	bio->bi_cryptd		= bio_src->bi_cryptd;
 #endif
-	bio->bi_sec_flags       = bio_src->bi_sec_flags;
 
 	switch (bio_op(bio)) {
 	case REQ_OP_DISCARD:

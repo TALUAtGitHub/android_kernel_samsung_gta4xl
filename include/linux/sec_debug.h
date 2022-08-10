@@ -41,7 +41,6 @@ extern void sec_debug_post_panic_handler(void);
 
 extern int sec_debug_get_debug_level(void);
 extern int sec_debug_enter_upload(void);
-extern void sec_debug_disable_printk_process(void);
 extern char *verbose_reg(int cpu_type, int reg_name, unsigned long reg_val);
 /* getlog support */
 extern void sec_getlog_supply_kernel(void *klog_buf);
@@ -55,7 +54,6 @@ extern void sec_gaf_supply_rqinfo(unsigned short curr_offset, unsigned short rq_
 #define sec_debug_post_panic_handler()		do { } while (0)
 
 #define sec_debug_get_debug_level()		(0)
-#define sec_debug_disable_printk_process()	do { } while (0)
 #define sec_debug_verbose_reg(a, b, c)		do { } while (0)
 
 #define sec_getlog_supply_kernel(a)		do { } while (0)

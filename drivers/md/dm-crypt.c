@@ -2823,6 +2823,7 @@ static int crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	ret = crypt_ctr_cipher(ti, argv[0], argv[1]);
 	if (ret < 0)
 		goto bad;
+
 	if (crypt_integrity_aead(cc)) {
 		cc->dmreq_start = sizeof(struct aead_request);
 		cc->dmreq_start += crypto_aead_reqsize(any_tfm_aead(cc));
@@ -2984,7 +2985,7 @@ static int crypt_map(struct dm_target *ti, struct bio *bio)
 	 * - for REQ_OP_DISCARD caller must use flush if IO ordering matters
 	 */
 	if (unlikely(bio->bi_opf & REQ_PREFLUSH ||
-	    bio_op(bio) == REQ_OP_DISCARD || bio->bi_sec_flags & SEC_BYPASS)) {
+	    bio_op(bio) == REQ_OP_DISCARD)) {
 		bio_set_dev(bio, cc->dev->bdev);
 		if (bio_sectors(bio))
 			bio->bi_iter.bi_sector = cc->start +

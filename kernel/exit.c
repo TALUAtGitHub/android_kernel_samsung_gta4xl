@@ -71,10 +71,6 @@
 #include <asm/pgtable.h>
 #include <asm/mmu_context.h>
 
-#ifdef CONFIG_SECURITY_DEFEX
-#include <linux/defex.h>
-#endif
-
 /*
  * The default value should be high enough to not crash a system that randomly
  * crashes its kernel from time to time, but low enough to at least not permit
@@ -823,21 +819,12 @@ static void check_stack_usage(void)
 #else
 static inline void check_stack_usage(void) {}
 #endif
-#ifdef CONFIG_FAST_TRACK
-#include <cpu/ftt/ftt.h>
-extern struct ftt_stat fttstat;
-#endif
+
 void __noreturn do_exit(long code)
 {
 	struct task_struct *tsk = current;
 	int group_dead;
 
-#ifdef CONFIG_SECURITY_DEFEX
-	task_defex_zero_creds(current);
-#endif
-
-	profile_task_exit(tsk);
-	kcov_task_exit(tsk);
 	/*
 	 * We can get here from a kernel oops, sometimes with preemption off.
 	 * Start by checking for critical errors.
@@ -889,18 +876,6 @@ void __noreturn do_exit(long code)
 	exit_signals(tsk);  /* sets PF_EXITING */
 	sync_band(tsk, LEAVE_BAND);
 
-	/*
-	 * Ensure that all new tsk->pi_lock acquisitions must observe
-	 * PF_EXITING. Serializes against futex.c:attach_to_pi_owner().
-	 */
-	smp_mb();
-	/*
-	 * Ensure that we must observe the pi_state in exit_mm() ->
-	 * mm_release() -> exit_pi_state_list().
-	 */
-	raw_spin_lock_irq(&tsk->pi_lock);
-	raw_spin_unlock_irq(&tsk->pi_lock);
-
 	/* sync mm's RSS info before statistics gathering */
 	if (tsk->mm)
 		sync_mm_rss(tsk->mm);
@@ -945,10 +920,6 @@ void __noreturn do_exit(long code)
 	exit_task_namespaces(tsk);
 	exit_task_work(tsk);
 	exit_thread(tsk);
-#ifdef CONFIG_FAST_TRACK
-	if(tsk->se.ftt_mark)
-		fttstat.ftt_cnt--;
-#endif
 
 	/*
 	 * Flush inherited counters to the parent - before the parent
@@ -1049,12 +1020,6 @@ void
 do_group_exit(int exit_code)
 {
 	struct signal_struct *sig = current->signal;
-
-	if (current->pid == 1) {
-		pr_err("[%s] trap before init(1) group exit, exit_code:%d\n",
-			current->comm, exit_code);
-		panic("Attempted to kill init task group! exitcode=0x%08x\n", exit_code);
-	}
 
 	BUG_ON(exit_code & 0x80); /* core dumps don't get here */
 

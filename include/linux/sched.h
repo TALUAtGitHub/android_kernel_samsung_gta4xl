@@ -491,13 +491,6 @@ struct sched_entity {
 	struct cfs_rq			*my_q;
 #endif
 
-#ifdef CONFIG_FAST_TRACK
-	int ftt_mark;
-	int ftt_enqueue_time;
-	atomic64_t ftt_dyn_mark;
-	u64 ftt_vrt_delta;
-#endif
-
 #ifdef CONFIG_SMP
 	/*
 	 * Per entity load average tracking.
@@ -652,10 +645,6 @@ union rcu_special {
 	} b; /* Bits. */
 	u32 s; /* Set of bits. */
 };
-
-#ifdef CONFIG_FIVE
-struct task_integrity;
-#endif
 
 enum perf_event_task_context {
 	perf_invalid_context = -1,
@@ -1260,14 +1249,8 @@ struct task_struct {
 	unsigned int			sequential_io;
 	unsigned int			sequential_io_avg;
 #endif
-#if defined(CONFIG_SDP)
-	unsigned int sensitive;
-#endif
 #ifdef CONFIG_DEBUG_ATOMIC_SLEEP
 	unsigned long			task_state_change;
-#endif
-#ifdef CONFIG_FIVE
-	struct task_integrity		*integrity;
 #endif
 	int				pagefault_disabled;
 #ifdef CONFIG_MMU

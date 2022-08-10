@@ -50,12 +50,6 @@
 #include "sd_ops.h"
 #include "sdio_ops.h"
 
-#ifdef CONFIG_MMC_SUPPORT_STLOG
-#include <linux/fslog.h>
-#else
-#define ST_LOG(fmt, ...)
-#endif
-
 /* If the device is not responding */
 #define MMC_CORE_TIMEOUT_MS	(10 * 60 * 1000) /* 10 minute timeout */
 
@@ -2611,7 +2605,6 @@ int _mmc_detect_card_removed(struct mmc_host *host)
 	if (ret) {
 		mmc_card_set_removed(host->card);
 		pr_err("%s: card remove detected\n", mmc_hostname(host));
-		ST_LOG("<%s> %s: card remove detected\n", __func__, mmc_hostname(host));
 	}
 
 	return ret;

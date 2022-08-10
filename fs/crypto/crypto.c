@@ -490,6 +490,7 @@ static int __init fscrypt_init(void)
 		goto fail_free_ctx;
 
 	return 0;
+
 fail_free_ctx:
 	kmem_cache_destroy(fscrypt_ctx_cachep);
 fail_free_queue:
