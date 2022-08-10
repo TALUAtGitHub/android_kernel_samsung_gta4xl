@@ -46,6 +46,7 @@
 #include <scsi/ufs/ioctl.h>
 #include <linux/of.h>
 #include <linux/blkdev.h>
+#include <linux/fs.h>
 #include "ufshcd.h"
 #include "ufs_quirks.h"
 #include "unipro.h"
@@ -124,8 +125,8 @@
 		_ret;                                                   \
 	})
 
-/* Called by FS */
-extern void (*ufs_debug_func)(void *);
+/* Called by ext4 and f2fs */
+void (*ufs_debug_func)(void *) = NULL;
 
 static int ufs_shutdown_state = 0;
 

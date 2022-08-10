@@ -22,8 +22,6 @@
 
 static struct kmem_cache *ino_entry_slab;
 struct kmem_cache *f2fs_inode_entry_slab;
-unsigned long long priv_cp_time;
-unsigned long long curr_cp_time;
 
 void f2fs_stop_checkpoint(struct f2fs_sb_info *sbi, bool end_io)
 {
@@ -684,8 +682,6 @@ int f2fs_recover_orphan_inodes(struct f2fs_sb_info *sbi)
 			nid_t ino = le32_to_cpu(orphan_blk->ino[j]);
 			err = recover_orphan_inode(sbi, ino);
 			if (err) {
-				print_block_data(sbi->sb, start_blk + i,
-					page_address(page), 0, F2FS_BLKSIZE);
 				f2fs_put_page(page, 1);
 				goto out;
 			}
@@ -783,22 +779,18 @@ static int get_checkpoint_version(struct f2fs_sb_info *sbi, block_t cp_addr,
 		f2fs_put_page(*cp_page, 1);
 		f2fs_msg(sbi->sb, KERN_WARNING,
 			"invalid crc_offset: %zu", crc_offset);
-		goto error;
+		return -EINVAL;
 	}
 
 	crc = cur_cp_crc(*cp_block);
 	if (!f2fs_crc_valid(sbi, crc, *cp_block, crc_offset)) {
 		f2fs_put_page(*cp_page, 1);
 		f2fs_msg(sbi->sb, KERN_WARNING, "invalid crc value");
-		goto error;
+		return -EINVAL;
 	}
 
 	*version = cur_cp_version(*cp_block);
 	return 0;
-
-error:
-	print_block_data(sbi->sb, cp_addr, page_address(*cp_page), 0, blk_size);
-	return -EINVAL;
 }
 
 static struct page *validate_checkpoint(struct f2fs_sb_info *sbi,
@@ -894,13 +886,9 @@ int f2fs_get_valid_checkpoint(struct f2fs_sb_info *sbi)
 
 	/* Sanity checking of checkpoint */
 	if (f2fs_sanity_check_ckpt(sbi)) {
-		print_block_data(sbi->sb, cur_page->index,
-				 page_address(cur_page), 0, blk_size);
 		err = -EFSCORRUPTED;
 		goto free_fail_no_cp;
 	}
-
-	f2fs_get_fsck_stat(sbi);
 
 	if (cp_blks <= 1)
 		goto done;
@@ -1163,7 +1151,6 @@ retry_flush_dents:
 		err = f2fs_sync_dirty_inodes(sbi, DIR_INODE);
 		if (err)
 			goto out;
-		blk_flush_plug(current);
 		cond_resched();
 		goto retry_flush_quotas;
 	}
@@ -1186,7 +1173,6 @@ retry_flush_dents:
 		err = f2fs_sync_inode_meta(sbi);
 		if (err)
 			goto out;
-		blk_flush_plug(current);
 		cond_resched();
 		goto retry_flush_quotas;
 	}
@@ -1204,7 +1190,6 @@ retry_flush_nodes:
 			f2fs_unlock_all(sbi);
 			goto out;
 		}
-		blk_flush_plug(current);
 		cond_resched();
 		goto retry_flush_nodes;
 	}
@@ -1522,24 +1507,6 @@ static int do_checkpoint(struct f2fs_sb_info *sbi, struct cp_control *cpc)
 	return unlikely(f2fs_cp_error(sbi)) ? -EIO : 0;
 }
 
-#define	CP_TIME_RECORD_UNIT	1000000
-static void f2fs_update_max_cp_interval(struct f2fs_sb_info *sbi)
-{
-	unsigned long long cp_interval = 0;
-
-	curr_cp_time = local_clock();
-	if (!priv_cp_time)
-		goto out;
-
-	cp_interval = ((curr_cp_time - priv_cp_time) / CP_TIME_RECORD_UNIT) ?
-		((curr_cp_time - priv_cp_time) / CP_TIME_RECORD_UNIT) : 1;
-
-	if (sbi->sec_stat.cp_max_interval < cp_interval)
-		sbi->sec_stat.cp_max_interval = cp_interval;
-out:
-	priv_cp_time = curr_cp_time;
-}
-
 /*
  * We guarantee that this checkpoint procedure will not fail.
  */
@@ -1621,8 +1588,6 @@ int f2fs_write_checkpoint(struct f2fs_sb_info *sbi, struct cp_control *cpc)
 stop:
 	unblock_operations(sbi);
 	stat_inc_cp_count(sbi->stat_info);
-	sbi->sec_stat.cp_cnt[STAT_CP_ALL]++;
-	f2fs_update_max_cp_interval(sbi);
 
 	if (cpc->reason & CP_RECOVERY)
 		f2fs_msg(sbi->sb, KERN_NOTICE,

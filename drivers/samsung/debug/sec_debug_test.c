@@ -766,12 +766,8 @@ static void simulate_WRITE_RO(char *arg)
 	unsigned long *ptr;
 
 	pr_crit("%s()\n", __func__);
-// Write to function addr will triger a warning by JOPP compiler
-#ifdef CONFIG_RKP_CFP_JOPP
-	ptr = (unsigned long *)__start_rodata;
-#else
+	/* Write to function addr will trigger a warning by JOPP compiler */
 	ptr = (unsigned long *)simulate_WRITE_RO;
-#endif
 	*ptr ^= 0x12345678;
 }
 
@@ -781,8 +777,8 @@ static int recursive_loop(int remaining)
 {
 	char buf[BUFFER_SIZE];
 
-	/*sub sp, sp, #(S_FRAME_SIZE+PRESERVE_STACK_SIZE) = 320+256 = 576 @kernel_ventry*/
-	if((unsigned long)(current->stack)+575 > current_stack_pointer)
+	/* sub sp, sp, #(S_FRAME_SIZE+PRESERVE_STACK_SIZE) = 320+256 = 576 @kernel_ventry */
+	if ((unsigned long)(current->stack)+575 > current_stack_pointer)
 		*((volatile unsigned int *)0) = 0;
 
 	/* Make sure compiler does not optimize this away. */

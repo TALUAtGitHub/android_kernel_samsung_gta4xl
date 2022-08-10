@@ -91,9 +91,6 @@ void __init_rwsem(struct rw_semaphore *sem, const char *name,
 	sem->owner = NULL;
 	osq_lock_init(&sem->osq);
 #endif
-#ifdef CONFIG_FAST_TRACK
-	sem->ftt_dep_task = NULL;
-#endif
 }
 
 EXPORT_SYMBOL(__init_rwsem);
@@ -277,10 +274,6 @@ __rwsem_down_read_failed_common(struct rw_semaphore *sem, int state)
 	    (count > RWSEM_WAITING_BIAS &&
 	     adjustment != -RWSEM_ACTIVE_READ_BIAS))
 		__rwsem_mark_wake(sem, RWSEM_WAKE_ANY, &wake_q);
-
-#ifdef CONFIG_FAST_TRACK
-	rwsem_dynamic_ftt_enqueue(current, waiter.task, READ_ONCE(sem->owner), sem);
-#endif
 
 	raw_spin_unlock_irq(&sem->wait_lock);
 	wake_up_q(&wake_q);
@@ -584,10 +577,6 @@ __rwsem_down_write_failed_common(struct rw_semaphore *sem, int state)
 	} else
 		count = atomic_long_add_return(RWSEM_WAITING_BIAS, &sem->count);
 
-#ifdef CONFIG_FAST_TRACK
-	rwsem_dynamic_ftt_enqueue(waiter.task, current, READ_ONCE(sem->owner), sem);
-#endif
-
 	/* wait until we successfully acquire the lock */
 	sec_debug_wtsk_set_data(DTYPE_RWSEM, (void *)sem);
 	set_current_state(state);
@@ -715,10 +704,6 @@ locked:
 
 	if (!list_empty(&sem->wait_list))
 		__rwsem_mark_wake(sem, RWSEM_WAKE_ANY, &wake_q);
-
-#ifdef CONFIG_FAST_TRACK
-	rwsem_dynamic_ftt_dequeue(sem, current);
-#endif
 
 	raw_spin_unlock_irqrestore(&sem->wait_lock, flags);
 	wake_up_q(&wake_q);

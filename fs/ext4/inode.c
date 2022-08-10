@@ -421,7 +421,6 @@ static int __check_block_validity(struct inode *inode, const char *func,
 	    (inode->i_ino ==
 	     le32_to_cpu(EXT4_SB(inode->i_sb)->s_es->s_journal_inum)))
 		return 0;
-
 	if (!ext4_inode_block_valid(inode, map->m_pblk, map->m_len)) {
 		ext4_error_inode(inode, func, line, map->m_pblk,
 				 "lblock %lu mapped to illegal pblock %llu "
@@ -1629,9 +1628,7 @@ static int ext4_da_reserve_space(struct inode *inode)
 		return ret;
 
 	spin_lock(&ei->i_block_reservation_lock);
-	if (ext4_claim_free_clusters(sbi, 1,
-			ext4_test_inode_flag(inode, EXT4_INODE_CORE_FILE) ?
-			EXT4_MB_USE_EXTRA_ROOT_BLOCKS : 0)) {
+	if (ext4_claim_free_clusters(sbi, 1, 0)) {
 		spin_unlock(&ei->i_block_reservation_lock);
 		dquot_release_reservation_block(inode, EXT4_C2B(sbi, 1));
 		return -ENOSPC;
@@ -4931,7 +4928,6 @@ struct inode *__ext4_iget(struct super_block *sb, unsigned long ino,
 		    ino != EXT4_BOOT_LOADER_INO) {
 			/* this inode is deleted */
 			ret = -ESTALE;
-			print_iloc_info(sb, iloc);
 			goto bad_inode;
 		}
 		/* The only unlinked inodes we let through here have
@@ -4947,9 +4943,6 @@ struct inode *__ext4_iget(struct super_block *sb, unsigned long ino,
 	if (ext4_has_feature_64bit(sb))
 		ei->i_file_acl |=
 			((__u64)le16_to_cpu(raw_inode->i_file_acl_high)) << 32;
-	if (ei->i_file_acl)
-		ext4_set_inode_state(inode, EXT4_STATE_HAS_EXTENDED_EA_BLOCK);
-
 	inode->i_size = ext4_isize(sb, raw_inode);
 	if ((size = i_size_read(inode)) < 0) {
 		ext4_error_inode(inode, function, line, 0,
@@ -5058,10 +5051,8 @@ struct inode *__ext4_iget(struct super_block *sb, unsigned long ino,
 			ret = ext4_ind_check_inode(inode);
 		}
 	}
-	if (ret) {
-		print_iloc_info(sb, iloc);
+	if (ret)
 		goto bad_inode;
-	}
 
 	if (S_ISREG(inode->i_mode)) {
 		inode->i_op = &ext4_file_inode_operations;
@@ -5243,11 +5234,6 @@ static int ext4_do_update_inode(handle_t *handle,
 	 * initialise them to zero for new inodes. */
 	if (ext4_test_inode_state(inode, EXT4_STATE_NEW))
 		memset(raw_inode, 0, EXT4_SB(inode->i_sb)->s_inode_size);
-
-	spin_lock(&ei->i_file_acl_debug_lock);
-	BUG_ON(ext4_test_inode_state(inode, EXT4_STATE_HAS_EXTENDED_EA_BLOCK) &&
-			ei->i_file_acl == 0);
-	spin_unlock(&ei->i_file_acl_debug_lock);
 
 	err = ext4_inode_blocks_set(handle, raw_inode, ei);
 	if (err) {

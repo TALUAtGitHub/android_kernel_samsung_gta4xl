@@ -176,12 +176,6 @@ struct blk_integrity {
 
 #endif	/* CONFIG_BLK_DEV_INTEGRITY */
 
-struct accumulated_stats {
-	struct timespec uptime;
-	unsigned long sectors[3];	/* READ, WRITE, DISCARD */
-	unsigned long ios[3];
-};
-
 struct gendisk {
 	/* major, first_minor and minors are input parameters only,
 	 * don't use directly.  Use disk_devt() and disk_max_parts().
@@ -215,7 +209,6 @@ struct gendisk {
 	struct timer_rand_state *random;
 	atomic_t sync_io;		/* RAID */
 	struct disk_events *ev;
-	struct accumulated_stats accios;
 #ifdef  CONFIG_BLK_DEV_INTEGRITY
 	struct kobject integrity_kobj;
 #endif	/* CONFIG_BLK_DEV_INTEGRITY */
@@ -386,16 +379,6 @@ void part_dec_in_flight(struct request_queue *q, struct hd_struct *part,
 			int rw);
 void part_inc_in_flight(struct request_queue *q, struct hd_struct *part,
 			int rw);
-
-static inline int part_in_flight_read(struct hd_struct *part)
-{
-	       return atomic_read(&part->in_flight[0]);
-}
-
-static inline int part_in_flight_write(struct hd_struct *part)
-{
-	       return atomic_read(&part->in_flight[1]);
-}
 
 static inline struct partition_meta_info *alloc_part_info(struct gendisk *disk)
 {

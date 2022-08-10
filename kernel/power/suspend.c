@@ -397,24 +397,6 @@ static int suspend_prepare(suspend_state_t state)
 		goto Finish;
 	}
 
-#ifndef CONFIG_SUSPEND_SKIP_SYNC
-	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
-	dbg_snapshot_suspend("sync_filesystems", sys_sync, NULL, state, DSS_FLAG_IN);
-	pr_info("Syncing filesystems ... ");
-	if (intr_sync(NULL)) {
-		printk("canceled.\n");
-		trace_suspend_resume(TPS("sync_filesystems"), 0, false);
-		error = -EBUSY;
-#ifdef CONFIG_SEC_PM_DEBUG
-		log_suspend_abort_reason("intr_sync failed");
-#endif
-		goto Finish;
-	}
-	pr_cont("done.\n");
-	dbg_snapshot_suspend("sync_filesystems", sys_sync, NULL, state, DSS_FLAG_OUT);
-	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
-#endif
-
 	trace_suspend_resume(TPS("freeze_processes"), 0, true);
 	dbg_snapshot_suspend("freeze_processes", suspend_freeze_processes,
 				NULL, 0, DSS_FLAG_IN);
@@ -599,6 +581,7 @@ int suspend_devices_and_enter(suspend_state_t state)
 	dbg_snapshot_suspend("resume_console", resume_console,
 				NULL, state, DSS_FLAG_OUT);
 	trace_suspend_resume(TPS("resume_console"), state, false);
+
  Close:
 	platform_resume_end(state);
 	pm_suspend_target_state = PM_SUSPEND_ON;
@@ -658,6 +641,16 @@ static int enter_state(suspend_state_t state)
 	if (state == PM_SUSPEND_TO_IDLE)
 		s2idle_begin();
 
+#ifndef CONFIG_SUSPEND_SKIP_SYNC
+	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+	dbg_snapshot_suspend("sync_filesystems", sys_sync, NULL, state, DSS_FLAG_IN);
+	pr_info("Syncing filesystems ... ");
+	sys_sync();
+	pr_cont("done.\n");
+	dbg_snapshot_suspend("sync_filesystems", sys_sync, NULL, state, DSS_FLAG_OUT);
+	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+#endif
+
 	pm_pr_dbg("Preparing system for sleep (%s)\n", mem_sleep_labels[state]);
 	pm_suspend_clear_flags();
 	error = suspend_prepare(state);
@@ -708,6 +701,7 @@ int pm_suspend(suspend_state_t state)
 
 	if (state <= PM_SUSPEND_ON || state >= PM_SUSPEND_MAX)
 		return -EINVAL;
+
 #ifdef CONFIG_SEC_PM_DEBUG
 	pm_suspend_marker("entry");
 #else
