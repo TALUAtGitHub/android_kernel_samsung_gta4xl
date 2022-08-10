@@ -58,7 +58,7 @@ void fscrypt_set_bio_cryptd_dun(const struct inode *inode, struct bio *bio, u64 
 	bio->bi_opf |= REQ_CRYPT;
 	bio->bi_cryptd = __fscrypt_get_bio_cryptd(inode);
 #ifdef CONFIG_BLK_DEV_CRYPT_DUN
-	if (dun)                          
+	if (dun)
 		bio->bi_iter.bi_dun = dun;
 #endif
 }
@@ -94,4 +94,3 @@ int fscrypt_submit_bh(int op, int op_flags, struct buffer_head *bh, struct inode
 	return 0;
 }
 EXPORT_SYMBOL(fscrypt_submit_bh);
-

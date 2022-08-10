@@ -509,12 +509,6 @@ struct skb_shared_info {
 	 * remains valid until skb destructor */
 	void *		destructor_arg;
 
-// ------------- START of KNOX_VPN ------------------//
-	uid_t uid;
-	pid_t pid;
-	u_int32_t knox_mark;
-// ------------- END of KNOX_VPN -------------------//
-
 	/* must be last field, see pskb_expand_head() */
 	skb_frag_t	frags[MAX_SKB_FRAGS];
 };
@@ -817,11 +811,6 @@ struct sk_buff {
 
 #if defined(CONFIG_MODEM_IF_LEGACY_QOS) || defined(CONFIG_MODEM_IF_QOS)
 	__u32			priomark;
-#endif
-
-#ifdef CONFIG_NET_SUPPORT_DROPDUMP
-	__u16			dropmask;
-	__u8			dropid;
 #endif
 
 	union {
