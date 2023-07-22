@@ -44,7 +44,6 @@ static struct exynos_ufs_sfr_log ufs_log_sfr[] = {
 	{"UIC COMMAND ARG1"		,	REG_UIC_COMMAND_ARG_1,		0},
 	{"UIC COMMAND ARG2"		,	REG_UIC_COMMAND_ARG_2,		0},
 	{"UIC COMMAND ARG3"		,	REG_UIC_COMMAND_ARG_3,		0},
-	{"CCAP"				,	REG_CRYPTO_CAPABILITY,		0},
 
 	{"VS HCI SFR"			,	LOG_VS_HCI_SFR,			0},
 
@@ -332,7 +331,6 @@ static struct exynos_ufs_sfr_log ufs_show_sfr[] = {
 	{"UIC COMMAND ARG1"		,	REG_UIC_COMMAND_ARG_1,		0},
 	{"UIC COMMAND ARG2"		,	REG_UIC_COMMAND_ARG_2,		0},
 	{"UIC COMMAND ARG3"		,	REG_UIC_COMMAND_ARG_3,		0},
-	{"CCAP"				,	REG_CRYPTO_CAPABILITY,		0},
 
 	{"VS HCI SFR"			,	LOG_VS_HCI_SFR,			0},
 
@@ -624,10 +622,6 @@ static void exynos_ufs_get_sfr(struct ufs_hba *hba,
 				cfg->val = ufshcd_readl(hba, cfg->offset);
 			else if (sel_api == LOG_VS_HCI_SFR)
 				cfg->val = hci_readl(ufs, cfg->offset);
-#ifdef CONFIG_EXYNOS_SMC_LOGGING
-			else if (sel_api == LOG_FMP_SFR)
-				cfg->val = exynos_smc(SMC_CMD_FMP_SMU_DUMP, 0, 0, cfg->offset);
-#endif
 			else if (sel_api == LOG_UNIPRO_SFR)
 				cfg->val = unipro_readl(ufs, cfg->offset);
 			else if (sel_api == LOG_PMA_SFR)
@@ -771,11 +765,6 @@ void exynos_ufs_dump_uic_info(struct ufs_hba *hba)
 {
 	struct exynos_ufs *ufs = to_exynos_ufs(hba);
 
-	/* secure log */
-#ifdef CONFIG_EXYNOS_SMC_LOGGING
-	exynos_smc(SMC_CMD_UFS_LOG, 1, 0, hba->secure_log.paddr);
-#endif
-
 	exynos_ufs_get_sfr(hba, ufs->debug.sfr);
 	exynos_ufs_get_attr(hba, ufs->debug.attr);
 	exynos_ufs_get_misc(hba);
@@ -819,10 +808,6 @@ int exynos_ufs_init_dbg(struct ufs_hba *hba)
 		exynos_clki->freq = 0;
 		list_add_tail(&exynos_clki->list, &ufs->debug.misc.clk_list_head);
 	}
-#ifdef CONFIG_DEBUG_SNAPSHOT
-	hba->secure_log.paddr = dbg_snapshot_get_spare_paddr(0);
-	hba->secure_log.vaddr = (u32 *)dbg_snapshot_get_spare_vaddr(0);
-#endif
 
 	return 0;
 }
@@ -865,7 +850,7 @@ void exynos_ufs_cmd_log_start(struct ufs_hba *hba, struct scsi_cmnd *cmd)
 		ufs_cmd_log.lba = lba;
 
 	ufs_cmd_log.sct = sct;
-	ufs_cmd_log.retries = cmd->allowed;
+	ufs_cmd_log.retries = cmd->retries;
 
 	exynos_ufs_putItem_start(&ufs_cmd_queue, &ufs_cmd_log);
 }

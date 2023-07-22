@@ -51,8 +51,6 @@ extern unsigned long dbg_snapshot_get_item_vaddr(char *);
 extern unsigned long dbg_snapshot_get_item_curr_ptr(char *);
 extern bool dbg_snapshot_dumper_one(void *, char *, size_t, size_t *);
 extern void dbg_snapshot_panic_handler_safe(void);
-extern unsigned long dbg_snapshot_get_spare_vaddr(unsigned int offset);
-extern unsigned long dbg_snapshot_get_spare_paddr(unsigned int offset);
 extern unsigned long dbg_snapshot_get_last_pc(unsigned int cpu);
 extern unsigned long dbg_snapshot_get_last_pc_paddr(void);
 extern void dbg_snapshot_hook_hardlockup_entry(void *v_regs);

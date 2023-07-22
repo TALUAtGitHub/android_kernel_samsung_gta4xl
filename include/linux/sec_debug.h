@@ -254,7 +254,6 @@ struct sec_debug_kernel_data {
 	uint64_t task_in_sys_reboot;
 	uint64_t task_in_sys_shutdown;
 	uint64_t task_in_dev_shutdown;
-	uint64_t task_in_sysrq_crash;
 	uint64_t task_in_soft_lockup;
 	uint64_t cpu_in_soft_lockup;
 	uint64_t task_in_hard_lockup;
@@ -271,7 +270,6 @@ struct sec_debug_kernel_data {
 	uint64_t dev_shutdown_end;
 	uint64_t dev_shutdown_duration;
 	uint64_t dev_shutdown_func;
-	uint64_t sysrq_ptr;
 	struct watchdogd_info wddinfo;
 	struct bad_stack_info bsi;
 	struct suspend_dev_info sdi;
@@ -348,7 +346,6 @@ extern void sec_debug_set_task_in_pm_suspend(uint64_t task);
 extern void sec_debug_set_task_in_sys_reboot(uint64_t task);
 extern void sec_debug_set_task_in_sys_shutdown(uint64_t task);
 extern void sec_debug_set_task_in_dev_shutdown(uint64_t task);
-extern void sec_debug_set_sysrq_crash(struct task_struct *task);
 extern void sec_debug_set_task_in_soft_lockup(uint64_t task);
 extern void sec_debug_set_cpu_in_soft_lockup(uint64_t cpu);
 extern void sec_debug_set_task_in_hard_lockup(uint64_t task);
@@ -686,11 +683,6 @@ struct tsp_dump_callbacks {
 
 #ifdef CONFIG_SEC_DEBUG_LIMIT_BACKTRACE
 #define MAX_UNWINDING_LOOP 50 /* maximum number of unwind frame */
-#endif
-
-#ifdef CONFIG_SEC_DEBUG_SYSRQ_KMSG
-extern size_t sec_debug_get_curr_init_ptr(void);
-extern size_t dbg_snapshot_get_curr_ptr_for_sysrq(void);
 #endif
 
 /* sec_debug_memtab.c */

@@ -290,17 +290,6 @@ static inline void dbg_snapshot_hook_logger(const char *name,
 	}
 }
 
-size_t dbg_snapshot_get_curr_ptr_for_sysrq(void)
-{
-#ifdef CONFIG_SEC_DEBUG_SYSRQ_KMSG
-	struct dbg_snapshot_item *item = &dss_items[dss_desc.log_kernel_num];
-
-	return (size_t)item->curr_ptr;
-#else
-	return 0;
-#endif
-}
-
 static inline void dbg_snapshot_hook_logbuf(const char *buf, size_t size)
 {
 	struct dbg_snapshot_item *item = &dss_items[dss_desc.log_kernel_num];

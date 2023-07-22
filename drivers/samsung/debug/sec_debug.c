@@ -724,22 +724,6 @@ void sec_debug_set_task_in_dev_shutdown(uint64_t task)
 		sdn->kernd.task_in_dev_shutdown = task;
 }
 
-void sec_debug_set_sysrq_crash(struct task_struct *task)
-{
-	if (sdn) {
-		sdn->kernd.task_in_sysrq_crash = (uint64_t)task;
-
-#ifdef CONFIG_SEC_DEBUG_SYSRQ_KMSG
-		if (task) {
-			if (strcmp(task->comm, "init") == 0)
-				sdn->kernd.sysrq_ptr = sec_debug_get_curr_init_ptr();
-			else
-				sdn->kernd.sysrq_ptr = dbg_snapshot_get_curr_ptr_for_sysrq();
-		}
-#endif
-	}
-}
-
 void sec_debug_set_task_in_soft_lockup(uint64_t task)
 {
 	if (sdn)
@@ -1027,7 +1011,6 @@ static int __init sec_debug_next_init(void)
 	sec_debug_set_task_in_sys_reboot((uint64_t)NULL);
 	sec_debug_set_task_in_sys_shutdown((uint64_t)NULL);
 	sec_debug_set_task_in_dev_shutdown((uint64_t)NULL);
-	sec_debug_set_sysrq_crash(NULL);
 	sec_debug_set_task_in_soft_lockup((uint64_t)NULL);
 	sec_debug_set_cpu_in_soft_lockup((uint64_t)0);
 	sec_debug_set_task_in_hard_lockup((uint64_t)NULL);

@@ -27,7 +27,6 @@
 #include <linux/percpu-refcount.h>
 #include <linux/scatterlist.h>
 #include <linux/blkzoned.h>
-#include <linux/blk-crypt.h>
 
 struct module;
 struct scsi_ioctl_command;
@@ -44,6 +43,7 @@ struct pr_ops;
 struct rq_wb;
 struct blk_queue_stats;
 struct blk_stat_callback;
+struct keyslot_manager;
 
 #define BLKDEV_MIN_RQ	4
 #define BLKDEV_MAX_RQ	128	/* Default maximum */
@@ -163,9 +163,6 @@ struct request {
 	unsigned int __data_len;	/* total data len */
 	int tag;
 	sector_t __sector;		/* sector cursor */
-#ifdef CONFIG_BLK_DEV_CRYPT_DUN
-	u64 __dun;                      /* dun for UFS */
-#endif
 
 	struct bio *bio;
 	struct bio *biotail;
@@ -553,6 +550,11 @@ struct request_queue {
 	 * queue_lock internally, e.g. scsi_request_fn().
 	 */
 	unsigned int		request_fn_active;
+
+#ifdef CONFIG_BLK_INLINE_ENCRYPTION
+	/* Inline crypto capabilities */
+	struct keyslot_manager *ksm;
+#endif
 
 	unsigned int		rq_timeout;
 	int			poll_nsec;
@@ -1055,13 +1057,6 @@ static inline sector_t blk_rq_pos(const struct request *rq)
 	return rq->__sector;
 }
 
-#ifdef CONFIG_BLK_DEV_CRYPT_DUN
-static inline sector_t blk_rq_dun(const struct request *rq)
-{
-	return rq->__dun;
-}
-#endif
-
 static inline unsigned int blk_rq_bytes(const struct request *rq)
 {
 	return rq->__data_len;
@@ -1434,8 +1429,7 @@ extern int blk_verify_command(unsigned char *cmd, fmode_t has_write_perm);
 enum blk_default_limits {
 	BLK_MAX_SEGMENTS	= 128,
 	BLK_SAFE_MAX_SECTORS	= 255,
-	BLK_OPT_MAX_SECTORS	= 1024,
-	BLK_DEF_MAX_SECTORS	= 1024,
+	BLK_DEF_MAX_SECTORS	= 2560,
 	BLK_MAX_SEGMENT_SIZE	= 65536,
 	BLK_SEG_BOUNDARY_MASK	= 0xFFFFFFFFUL,
 };

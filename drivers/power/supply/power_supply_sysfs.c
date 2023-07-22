@@ -62,7 +62,8 @@ static const char * const power_supply_charge_type_text[] = {
 static const char * const power_supply_health_text[] = {
 	"Unknown", "Good", "Overheat", "Dead", "Over voltage",
 	"Unspecified failure", "Cold", "Watchdog timer expire",
-	"Safety timer expire", "Under voltage"
+	"Safety timer expire", "Under voltage", "Over current",
+	"Warm", "Cool", "Hot"
 };
 
 static const char * const power_supply_technology_text[] = {
@@ -93,8 +94,7 @@ static ssize_t power_supply_show_property(struct device *dev,
 
 		if (ret < 0) {
 			if (ret == -ENODATA)
-				dev_dbg_ratelimited(dev,
-					"driver has no data for `%s' property\n",
+				dev_dbg(dev, "driver has no data for `%s' property\n",
 					attr->attr.name);
 			else if (ret != -ENODEV && ret != -EAGAIN)
 				dev_err_ratelimited(dev,

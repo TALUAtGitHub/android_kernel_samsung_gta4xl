@@ -36,5 +36,3 @@ void ufs_set_sec_unique_number(struct ufs_hba *hba, u8 *str_desc_buf, u8 *desc_b
 	/* Null terminate the unique number string */
 	hba->unique_number[UFS_UN_20_DIGITS] = '\0';
 }
-
-

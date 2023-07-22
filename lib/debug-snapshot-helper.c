@@ -184,24 +184,6 @@ unsigned long dbg_snapshot_get_last_pc(unsigned int cpu)
 		return dss_desc.hardlockup_core_pc[cpu];
 }
 
-unsigned long dbg_snapshot_get_spare_vaddr(unsigned int offset)
-{
-	return (unsigned long)(dbg_snapshot_get_base_vaddr() +
-				DSS_OFFSET_SPARE_BASE + offset);
-}
-
-unsigned long dbg_snapshot_get_spare_paddr(unsigned int offset)
-{
-	unsigned long base_vaddr = 0;
-	unsigned long base_paddr = (unsigned long)dbg_snapshot_get_base_paddr();
-
-	if (base_paddr)
-		base_vaddr = (unsigned long)(base_paddr +
-				DSS_OFFSET_SPARE_BASE + offset);
-
-	return base_vaddr;
-}
-
 unsigned int dbg_snapshot_get_item_size(char* name)
 {
 	unsigned long i;

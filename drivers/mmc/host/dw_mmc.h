@@ -552,8 +552,6 @@ do {	\
 #define AES_CBC		1
 #define AES_XTS		2
 
-#define DW_MMC_MAX_TRANSFER_SIZE	4096
-#define DW_MMC_SECTOR_SIZE		512
 #define MMC_DW_IDMAC_MULTIPLIER		8
 
 #define DW_MMC_240A		0x240a
@@ -992,14 +990,6 @@ struct dw_mci_drv_data {
 	int (*switch_voltage) (struct mmc_host * mmc, struct mmc_ios * ios);
 	void (*hwacg_control) (struct dw_mci * host, u32 flag);
 	int (*misc_control) (struct dw_mci * host, enum dw_mci_misc_control control, void *priv);
-	int (*crypto_engine_cfg) (struct dw_mci * host,
-				  void *desc,
-				  struct mmc_data * data,
-				  struct page * page, int page_index,
-				  int sector_offset, bool cmdq_enabled);
-	int (*crypto_engine_clear) (struct dw_mci * host, void *desc, bool cmdq_enabled);
-	int (*crypto_sec_cfg) (struct dw_mci * host, bool init);
-	int (*access_control_abort) (struct dw_mci * host);
 	void (*ssclk_control) (struct dw_mci * host, int enable);
 };
 

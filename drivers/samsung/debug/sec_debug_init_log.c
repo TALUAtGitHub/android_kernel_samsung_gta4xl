@@ -18,17 +18,6 @@ static char *buf_ptr;
 static unsigned long buf_size;
 static unsigned long buf_idx;
 
-size_t sec_debug_get_curr_init_ptr(void)
-{
-#ifdef CONFIG_SEC_DEBUG_SYSRQ_KMSG
-	if (!buf_ptr || !buf_size)
-		return 0;
-	else
-		return (size_t)(buf_ptr + buf_idx);
-#endif
-	return 0;
-}
-
 static void sec_debug_hook_init_log(const char *str, size_t size)
 {
 	int len;

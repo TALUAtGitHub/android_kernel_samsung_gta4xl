@@ -33,7 +33,6 @@
 #define DSS_CORE_REG_SZ			SZ_4K
 #define DSS_DBGC_LOG_SZ			SZ_4K
 #define DSS_HEADER_TOTAL_SZ		(DSS_HEADER_SZ + DSS_MMU_REG_SZ + DSS_CORE_REG_SZ + DSS_DBGC_LOG_SZ)
-#define DSS_SPARE_SZ			(DSS_HEADER_SIZE - DSS_HEADER_TOTAL_SZ)
 
 /*  Length domain */
 #define DSS_LOG_STRING_LEN		SZ_128
@@ -81,7 +80,6 @@
 
 /* S5P_VA_SS_BASE + 0xC00 -- 0xFFF is reserved */
 #define DSS_OFFSET_PANIC_STRING		(0xC00)
-#define DSS_OFFSET_SPARE_BASE		(DSS_HEADER_TOTAL_SZ)
 
 struct dbg_snapshot_log {
 	struct __task_log {

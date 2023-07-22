@@ -735,20 +735,6 @@ config MMC_DW_FORCE_32BIT_SFR_RW
 	  read/write when 64bit read/write is not allowed for SFR on some DW
 	  MMC implementation. Consider using this with FIFO SFR on PIO mode.
 
-config MMC_DW_EXYNOS_FMP
-	tristate "EXYNOS Flash Memory Protector for MMC_DW"
-	depends on MMC_DW_EXYNOS
-	---help---
-	  This selects the EXYNOS MMC_DW FMP Driver.
-
-	  If you have a controller with this interface, say Y or M here.
-
-	  If unsure, say N.
-
-	  If you have a controller with this interface, say Y or M here.
-
-	  If unsure, say N.
-
 config MMC_DW_K3
 	tristate "K3 specific extensions for Synopsys DW Memory Card Interface"
 	depends on MMC_DW

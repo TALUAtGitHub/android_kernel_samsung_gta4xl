@@ -185,6 +185,7 @@ obj-$(CONFIG_FPGA)		+= fpga/
 obj-$(CONFIG_FSI)		+= fsi/
 obj-$(CONFIG_TEE)		+= tee/
 obj-$(CONFIG_MULTIPLEXER)	+= mux/
+obj-$(CONFIG_GNSS)		+= gnss/
 
 obj-$(CONFIG_EXYNOS_BTS)	+= bts/
 obj-$(CONFIG_TRUSTONIC_TEE)     += gud/
@@ -208,7 +209,7 @@ obj-y				+= vibrator/
 # Fingerprint
 obj-$(CONFIG_SENSORS_FINGERPRINT) += fingerprint/
 
-# GNSS
+# GPS
 obj-$(CONFIG_GPS_BCM4753)	+= gps/
 
 # SPU signature verify

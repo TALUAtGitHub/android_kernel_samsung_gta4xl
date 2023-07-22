@@ -3235,10 +3235,6 @@ static int sd_revalidate_disk(struct gendisk *disk)
 				      (sector_t)BLK_DEF_MAX_SECTORS);
 	}
 
-	/* IOPP-max_sectors-v1.0.4.14 */
-	/* Update max_sectors if it is lower than optimal size for host side*/
-	rw_max = max(rw_max, (unsigned int)BLK_OPT_MAX_SECTORS);
-
 	/* Do not exceed controller limit */
 	rw_max = min(rw_max, queue_max_hw_sectors(q));
 
@@ -3484,39 +3480,6 @@ static void sd_probe_async(void *data, async_cookie_t cookie)
 #endif
 	if (sdkp->capacity)
 		sd_dif_config_host(sdkp);
-
-#if defined(CONFIG_UFS_DATA_LOG)
-	if (sdp->host->by_ufs && !strcmp(gd->disk_name, "sda")) {
-		struct hd_struct *part;
-		int i;
-		sdp->host->ufs_system_start = 0;
-		sdp->host->ufs_system_end = 0;
-		sdp->host->ufs_sys_log_en = false;
-
-		for (i = 1; i < 30 ; i++) {
-			if (!gd->part_tbl)
-					break;
-
-			part = gd->part_tbl->part[i];
-			if (!part)
-					break;
-			if (!strncmp(part->info->volname, "SYSTEM", 6) ||
-					!strncmp(part->info->volname, "system", 6) ||
-					!strncmp(part->info->volname, "SUPER", 5) ||
-					!strncmp(part->info->volname, "super", 5)) {
-				sdp->host->ufs_system_start = part->start_sect;
-				sdp->host->ufs_system_end = (part->start_sect + part->nr_sects);
-				sdp->host->ufs_sys_log_en = true;
-				sd_printk(KERN_NOTICE, sdkp, "UFS data logging enabled\n");
-				sd_printk(KERN_NOTICE, sdkp, "UFS %s partition, from : %ld, to %ld\n",
-						part->info->volname,
-						(unsigned long)sdp->host->ufs_system_start,
-						(unsigned long)sdp->host->ufs_system_end);
-				break;
-			}
-		}
-	}
-#endif
 
 	sd_revalidate_disk(gd);
 
@@ -3856,7 +3819,7 @@ static void sd_shutdown(struct device *dev)
 		sd_printk(KERN_NOTICE, sdkp, "Stopping disk\n");
 		sd_start_stop_device(sdkp, 0);
 	}
-	
+
 	if (sdp->host->by_ufs) {
 		spin_lock_irqsave(q->queue_lock, flags);
 		queue_flag_set(QUEUE_FLAG_DYING, q);
