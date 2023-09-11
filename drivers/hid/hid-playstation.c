@@ -5,7 +5,7 @@
  *  Copyright (c) 2020-2022 Sony Interactive Entertainment
  */
 
-#include <linux/bitops.h>
+#include <linux/bits.h>
 #include <linux/crc32.h>
 #include <linux/device.h>
 #include <linux/hid.h>
