@@ -1207,29 +1207,23 @@ static int ncm_unwrap_ntb(struct gether *port,
 			  struct sk_buff_head *list)
 {
 	struct f_ncm	*ncm = func_to_ncm(&port->func);
-	unsigned char	*ntb_ptr = skb->data;
-	__le16		*tmp;
+	__le16		*tmp = (void *) skb->data;
 	unsigned	index, index2;
 	unsigned	dg_len, dg_len2;
 	unsigned	ndp_len;
-	unsigned	block_len;
 	struct sk_buff	*skb2;
 	int		ret = -EINVAL;
-	unsigned	ntb_max = le32_to_cpu(ntb_parameters.dwNtbOutMaxSize);
+	unsigned	max_size = le32_to_cpu(ntb_parameters.dwNtbOutMaxSize);
 	const struct ndp_parser_opts *opts = ncm->parser_opts;
 	unsigned	crc_len = ncm->is_crc ? sizeof(uint32_t) : 0;
 	int		dgram_counter;
-	int		to_process = skb->len;
-
-parse_ntb:
-	tmp = (__le16 *)ntb_ptr;
 
 	/* dwSignature */
 	if (get_unaligned_le32(tmp) != opts->nth_sign) {
 		INFO(port->func.config->cdev, "Wrong NTH SIGN, skblen %d\n",
 			skb->len);
 		print_hex_dump(KERN_INFO, "HEAD:", DUMP_PREFIX_ADDRESS, 32, 1,
-			       ntb_ptr, 32, false);
+			       skb->data, 32, false);
 
 		goto err;
 	}
@@ -1241,9 +1235,8 @@ parse_ntb:
 	}
 	tmp++; /* skip wSequence */
 
-	block_len = get_ncm(&tmp, opts->block_length);
 	/* (d)wBlockLength */
-	if (block_len > ntb_max) {
+	if (get_ncm(&tmp, opts->block_length) > max_size) {
 		INFO(port->func.config->cdev, "OUT size exceeded\n");
 		goto err;
 	}
@@ -1257,7 +1250,7 @@ parse_ntb:
 	}
 
 	/* walk through NDP */
-	tmp = ((__le16 *)ntb_ptr) + index;
+	tmp = ((void *)skb->data) + index;
 	if (get_unaligned_le32(tmp) != ncm->ndp_sign) {
 		INFO(port->func.config->cdev, "Wrong NDP SIGN\n");
 		goto err;
@@ -1296,10 +1289,10 @@ parse_ntb:
 		if (ncm->is_crc) {
 			uint32_t crc, crc2;
 
-			crc = get_unaligned_le32(ntb_ptr +
+			crc = get_unaligned_le32(skb->data +
 						 index + dg_len - crc_len);
 			crc2 = ~crc32_le(~0,
-					 ntb_ptr + index,
+					 skb->data + index,
 					 dg_len - crc_len);
 			if (crc != crc2) {
 				INFO(port->func.config->cdev, "Bad CRC\n");
@@ -1336,13 +1329,6 @@ parse_ntb:
 
 	VDBG(port->func.config->cdev,
 	     "Parsed NTB with %d frames\n", dgram_counter);
-
-	to_process -= block_len;
-	if (to_process != 0) {
-		ntb_ptr = (unsigned char *)(ntb_ptr + block_len);
-		goto parse_ntb;
-	}
-
 	return 0;
 err:
 	printk(KERN_DEBUG"usb:%s Dropped %d \n", __func__, skb->len);
