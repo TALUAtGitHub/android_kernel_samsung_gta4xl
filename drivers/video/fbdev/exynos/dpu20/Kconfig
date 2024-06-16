@@ -87,6 +87,11 @@ config DECON_BTS_LEGACY
         depends on EXYNOS_DPU20
         default n
 
+config DECON_SYSTRACE
+	bool "Decon Systrace"
+        depends on EXYNOS_DPU20
+        default n
+
 config FB_TEST
 	bool "Framebuffer test only"
         depends on EXYNOS_DPU20

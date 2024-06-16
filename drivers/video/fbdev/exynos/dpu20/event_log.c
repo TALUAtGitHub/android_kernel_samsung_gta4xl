@@ -893,6 +893,7 @@ static const struct file_operations decon_mres_fops = {
 	.release = seq_release,
 };
 
+#if defined(CONFIG_DECON_SYSTRACE)
 static int decon_systrace_show(struct seq_file *s, void *unused)
 {
 	seq_printf(s, "%u\n", decon_systrace_enable);
@@ -934,6 +935,7 @@ static const struct file_operations decon_systrace_fops = {
 	.llseek = seq_lseek,
 	.release = seq_release,
 };
+#endif
 
 #if defined(CONFIG_DSIM_CMD_TEST)
 static int decon_debug_cmd_show(struct seq_file *s, void *unused)
@@ -1251,6 +1253,7 @@ int decon_create_debugfs(struct decon_device *decon)
 			ret = -ENOENT;
 			goto err_debugfs;
 		}
+#if defined(CONFIG_DECON_SYSTRACE)
 		decon->d.debug_systrace = debugfs_create_file("decon_systrace", 0444,
 				decon->d.debug_root, NULL, &decon_systrace_fops);
 		if (!decon->d.debug_systrace) {
@@ -1258,6 +1261,7 @@ int decon_create_debugfs(struct decon_device *decon)
 			ret = -ENOENT;
 			goto err_debugfs;
 		}
+#endif
 #if defined(CONFIG_DSIM_CMD_TEST)
 		decon->d.debug_cmd = debugfs_create_file("cmd", 0444,
 				decon->d.debug_root, NULL, &decon_cmd_fops);

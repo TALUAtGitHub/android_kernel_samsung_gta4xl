@@ -66,7 +66,9 @@ int win_update_log_level = 6;
 module_param(win_update_log_level, int, 0644);
 int dpu_mres_log_level = 6;
 module_param(dpu_mres_log_level, int, 0644);
+#if defined(CONFIG_DECON_SYSTRACE)
 int decon_systrace_enable;
+#endif
 void decon_wait_for_vstatus(struct decon_device *decon, u32 timeout);
 
 struct decon_device *decon_drvdata[MAX_DECON_CNT];
@@ -82,6 +84,7 @@ static char *decon_state_names[] = {
 	"TUI",
 };
 
+#if defined(CONFIG_DECON_SYSTRACE)
 void tracing_mark_write(struct decon_device *decon, char id, char *str1, int value)
 {
 	char buf[DECON_TRACE_BUF_SIZE] = {0,};
@@ -108,6 +111,7 @@ void tracing_mark_write(struct decon_device *decon, char id, char *str1, int val
 	trace_puts(buf);
 
 }
+#endif
 
 static void decon_dump_using_dpp(struct decon_device *decon)
 {
@@ -2230,8 +2234,10 @@ static void decon_update_regs(struct decon_device *decon,
 	struct decon_mode_info psr;
 	int i;
 
+#if defined(CONFIG_DECON_SYSTRACE)
 	if (!decon->systrace.pid)
 		decon->systrace.pid = current->pid;
+#endif
 
 	decon_systrace(decon, 'B', "decon_update_regs", 0);
 
@@ -4087,9 +4093,11 @@ static int decon_probe(struct platform_device *pdev)
 	snprintf(device_name, MAX_NAME_SIZE, "decon%d", decon->id);
 	decon_create_timeline(decon, device_name);
 
+#if defined(CONFIG_DECON_SYSTRACE)
 	/* systrace */
 	decon_systrace_enable = 0;
 	decon->systrace.pid = 0;
+#endif
 
 	ret = decon_init_resources(decon, pdev, device_name);
 	if (ret)

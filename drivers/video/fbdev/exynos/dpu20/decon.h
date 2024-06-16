@@ -70,7 +70,9 @@ extern int decon_log_level;
 extern int dpu_bts_log_level;
 extern int win_update_log_level;
 extern int dpu_mres_log_level;
+#if defined(CONFIG_DECON_SYSTRACE)
 extern int decon_systrace_enable;
+#endif
 extern struct decon_bts_ops decon_bts_control;
 
 #define DECON_MODULE_NAME	"exynos-decon"
@@ -177,6 +179,7 @@ void dpu_debug_printk(const char *function_name, const char *format, ...);
 			dpu_debug_printk("MRES", fmt, ##args);			\
 	} while (0)
 
+#if defined(CONFIG_DECON_SYSTRACE)
 /* DECON systrace related */
 void tracing_mark_write(struct decon_device *decon, char id, char *str1, int value);
 #define decon_systrace(decon, id, str1, value)					\
@@ -184,6 +187,9 @@ void tracing_mark_write(struct decon_device *decon, char id, char *str1, int val
 		if (decon_systrace_enable)					\
 			tracing_mark_write(decon, id, str1, value);		\
 	} while (0)
+#else
+#define decon_systrace(decon, id, str1, value)	do { } while (0)
+#endif
 
 enum decon_hold_scheme {
 	/*  should be set to this value in case of DSIM video mode */
@@ -762,7 +768,9 @@ struct decon_debug {
 	struct dentry *debug_dump;
 	struct dentry *debug_bts;
 	struct dentry *debug_win;
+#if defined(CONFIG_DECON_SYSTRACE)
 	struct dentry *debug_systrace;
+#endif
 #if defined(CONFIG_DSIM_CMD_TEST)
 	struct dentry *debug_cmd;
 #endif
@@ -882,10 +890,13 @@ struct decon_cursor {
 	bool enabled;
 };
 
+#if defined(CONFIG_DECON_SYSTRACE)
 /* systrace */
 struct decon_systrace_data {
 	pid_t pid;
 };
+#endif
+
 #if !defined(CONFIG_SUPPORT_LEGACY_FENCE)
 struct decon_fence {
 	char name[8];
@@ -979,8 +990,10 @@ struct decon_device {
 	unsigned long prev_hdr_bits;
 	struct exynos_hdr_static_info prev_hdr_info;
 	enum hwc_ver ver;
+#if defined(CONFIG_DECON_SYSTRACE)
 	/* systrace */
 	struct decon_systrace_data systrace;
+#endif
 	int	update_regs_list_cnt;
 
 	bool mres_enabled;

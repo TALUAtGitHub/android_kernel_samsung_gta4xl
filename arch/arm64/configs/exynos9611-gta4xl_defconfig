@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 4.14.330 Kernel Configuration
+# Linux/arm64 4.14.336 Kernel Configuration
 #
 CONFIG_ARM64=y
 CONFIG_64BIT=y
@@ -3210,6 +3210,7 @@ CONFIG_EXYNOS_BLOCK_MODE=y
 # CONFIG_EXYNOS_CURSOR is not set
 # CONFIG_EXYNOS_DSIM_DITHER is not set
 # CONFIG_DECON_BTS_LEGACY is not set
+# CONFIG_DECON_SYSTRACE is not set
 # CONFIG_FB_TEST is not set
 # CONFIG_DSIM_CMD_TEST is not set
 # CONFIG_SUPPORT_LEGACY_ION is not set
