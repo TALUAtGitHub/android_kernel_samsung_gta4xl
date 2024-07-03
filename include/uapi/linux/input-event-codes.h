@@ -727,7 +727,6 @@
 #define REL_WHEEL		0x08
 #define REL_MISC		0x09
 #define REL_MAX			0x0f
-#define SW_PEN_INSERT		0x13  /* set = pen insert, remove */
 #define REL_CNT			(REL_MAX+1)
 
 /*

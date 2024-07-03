@@ -820,7 +820,7 @@ int himax_input_register(struct himax_ts_data *ts)
 	input_set_abs_params(ts->hx_pen_dev, ABS_DISTANCE, 0, 1, 0, 0);
 	input_set_abs_params(ts->hx_pen_dev, ABS_TILT_X, -60, 60, 0, 0);
 	input_set_abs_params(ts->hx_pen_dev, ABS_TILT_Y, -60, 60, 0, 0);
-	/*input_set_capability(ts->hx_pen_dev, EV_SW, SW_PEN_INSERT);*/
+	/*input_set_capability(ts->hx_pen_dev, EV_SW, SW_PEN_INSERTED);*/
 	input_set_capability(ts->hx_pen_dev, EV_KEY, BTN_TOUCH);
 	input_set_capability(ts->hx_pen_dev, EV_KEY, BTN_STYLUS);
 	input_set_capability(ts->hx_pen_dev, EV_KEY, BTN_STYLUS2);
